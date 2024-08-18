@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <queue>
 #include <regex>
 #include <string>
 #include <vector>
@@ -9,15 +10,20 @@
 // using shunting yard algo
 // also reverse polish notation
 // https://stackoverflow.com/questions/11627440/regex-c-extract-substring
-void parseToReversePolish(const std::string& eq,
+void parseToReversePolish(std::string& eq,
                           std::vector<std::string>& rPolishEq) {
-    std::regex findNum("\\d*.?\\d*");
     // TODO all chars must be lowercase
-    std::regex findSym("[^\\d\\.a-z]|[a-z]{3}|[a-z]{3}\\d*");
-    std::smatch numMatches;
-    std::smatch symMatches;
-    std::regex_search(eq.begin(), eq.end(), numMatches, findNum);
-    std::regex_search(eq.begin(), eq.end(), symMatches, findSym);
+    const std::regex findVal("[^\\d\\.a-z]|[a-z]{3}|\\d*\\.?\\d+");
+    std::regex_token_iterator<std::string::iterator> rend;
+    std::regex_token_iterator<std::string::iterator> value(eq.begin(), eq.end(),
+                                                           findVal);
+    std::queue<std::string> eqQueue;
+    while (value != rend) {
+        std::cout << *value++ << std::endl;
+        /*eqQueue.push(*value++);*/
+        /*std::cout << eqQueue.front() << std::endl;*/
+        /*eqQueue.pop();*/
+    }
 }
 
 int main() {
