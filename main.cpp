@@ -29,17 +29,23 @@ double simple_solve(std::string& eq) {
     case '^':
         return pow(lNum, rNum);
     default:
+        std::cout << "Enter a valid symbol: " << std::endl;
         return -1;
     }
 }
 
 int main() {
     std::string eq;
-    std::cout << "Enter in your equation:" << std::endl;
+    std::cout << "Enter in your equation: " << std::endl;
+
     while (std::getline(std::cin, eq)) {
+        if (eq.empty()) {
+            continue;
+        }
+
         double ans = simple_solve(eq);
         std::cout << ans << std::endl;
-        std::cout << "Enter in your equation:" << std::endl;
+        std::cout << "Enter in your equation: " << std::endl;
     }
 
     return 0;
