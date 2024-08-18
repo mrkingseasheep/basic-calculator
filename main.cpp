@@ -2,9 +2,45 @@
 #include <cmath>
 #include <iostream>
 #include <string>
+#include <vector>
+
+union Value {
+    double num;
+    char op;
+};
+
+class Node {
+  public:
+    Value value;
+    Node* lVal;
+    Node* rVal;
+    bool isNum = true;
+
+    Node() {};
+
+    void setOp(char op) {
+        value.op = op;
+        isNum = true;
+    }
+
+    void setNum(double num) {
+        value.num = num;
+        isNum = false;
+    }
+};
+
+double parseNum(const char* eq) {}
+
+Node* parseEq(char* eqBeg, char* eqEnd) {
+    std::vector<char*> bracket;
+    for (char* curNode = eqBeg; curNode != eqEnd; ++curNode) {
+        if (*curNode == '(') {
+            bracket.push_back(curNode);
+        }
+    }
+}
 
 double solve(std::string& eq) {
-    eq.erase(std::remove_if(eq.begin(), eq.end(), isspace), eq.end());
     std::cout << "solving..." << std::endl;
     std::cout << eq << std::endl;
     return 0;
@@ -43,6 +79,7 @@ int main() {
             continue;
         }
 
+        eq.erase(std::remove_if(eq.begin(), eq.end(), isspace), eq.end());
         double ans = simple_solve(eq);
         std::cout << ans << std::endl;
         std::cout << "Enter in your equation: " << std::endl;
