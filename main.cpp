@@ -132,7 +132,6 @@ void calcEqOneOp(double& num, std::string& op) {
 void calcEqTwoOp(double& lNum, double& rNum, std::string& op) {
     std::cout << "======" << std::endl;
     std::cout << lNum << " " << op << " " << rNum << std::endl;
-    std::cout << "======" << std::endl;
     if (op == "+") {
         lNum += rNum;
     } else if (op == "-") {
@@ -147,8 +146,9 @@ void calcEqTwoOp(double& lNum, double& rNum, std::string& op) {
 }
 
 void debugActions(std::vector<std::string>* action) {
+    std::cout << ">>> ";
     for (auto temp : *action) {
-        std::cout << temp;
+        std::cout << temp << " ";
     }
     std::cout << std::endl;
 }
@@ -164,11 +164,7 @@ double solveReversePolishEq(std::vector<std::string>& action) {
 
     int idx = 0;
     while (idx < action.size()) {
-        /*std::cout <<
-         * "--------------------------------------------------------"*/
-        /*          << std::endl;*/
-        /*std::cout << idx << " : " << action.size() << std::endl;*/
-        /*debugActions(&action + idx);*/
+        debugActions(&action);
         double lNum, rNum, temp;
 
         // this case should never happen but I'm leaving it
@@ -227,16 +223,12 @@ int main() {
         tokenizeEq(eq, actionQueue);
         std::vector<std::string> action = parseToReversePolish(eq, actionQueue);
 
-        /*std::cout << "=======================" << std::endl;*/
-        /*for (auto temp : action) {*/
-        /*    std::cout << temp;*/
-        /*}*/
-        /*std::cout << std::endl;*/
-        /*std::cout << "=======================" << std::endl;*/
-
         double ans = solveReversePolishEq(action);
-        std::cout << "the answer to the question is: " << ans << std::endl;
+        std::cout << "<ANS> " << ans << std::endl;
 
+        std::cout
+            << "------------------------------------------------------------"
+            << std::endl;
         std::cout << "Enter in your equation: " << std::endl;
     }
 
