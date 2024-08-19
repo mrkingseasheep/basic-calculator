@@ -6,7 +6,19 @@
 #include <regex>
 #include <stack>
 #include <string>
+#include <unordered_map>
 #include <vector>
+
+// Which operators have the greatest priority
+// ()
+// ^
+// */
+// +-
+// > < >= <= =
+// cant be const for reasons
+// still const in spirit lmao
+std::unordered_map<std::string, int> OPERATOR_PRIORITY = {
+    {"+", 2}, {"-", 2}, {"*", 3}, {"/", 3}, {"^", 4}, {"%", 4}};
 
 // no more tree solution
 // using shunting yard algo
@@ -15,7 +27,7 @@
 void tokenizeEq(std::string& eq, std::queue<std::string>& actionQueue) {
     // TODO all chars must be lowercase
     // https://stackoverflow.com/questions/21667295/how-to-match-multiple-results-using-stdregex
-    const std::regex findVal("[^\\d\\.a-z]|[a-z]{3}|\\d*\\.?\\d+");
+    const std::regex findVal("\\d*\\.?\\d+|[^\\d\\.a-z]|[a-z]{3}");
     std::regex_token_iterator<std::string::iterator> rend;
     std::regex_token_iterator<std::string::iterator> value(eq.begin(), eq.end(),
                                                            findVal);
@@ -25,17 +37,12 @@ void tokenizeEq(std::string& eq, std::queue<std::string>& actionQueue) {
     }
 }
 
-// Which operators have the greatest priority
-// ()
-// ^
-// */
-// +-
-// > < >= <= =
 std::vector<std::string>
 parseToReversePolish(std::string& eq, std::queue<std::string>& actionQueue) {
     std::stack<std::string> eqOperator;
     std::vector<std::string> action;
 
+    double prevPriority = -1;
     while (!actionQueue.empty()) {
         std::string curAction = actionQueue.front();
         actionQueue.pop();
@@ -52,11 +59,26 @@ parseToReversePolish(std::string& eq, std::queue<std::string>& actionQueue) {
                 break;
             }
             action.push_back(curAction);
+            std::cout << curAction << std::endl;
             continue;
         }
 
-        // CHANGE ME AFTER DEBUG
-        action.push_back("+");
+        // curAction is a operation
+        double priority = OPERATOR_PRIORITY[curAction];
+        std::cout << priority << std::endl;
+
+        if (prevPriority == -1) {
+            eqOperator.push(curAction);
+            prevPriority = priority;
+        }
+
+        if (priority > prevPriority) {
+            action.push_back(curAction);
+        } else {
+            action.push_back(eqOperator.top());
+            eqOperator.pop();
+            eqOperator.push(curAction);
+        }
     }
 
     return action;
@@ -77,10 +99,6 @@ int main() {
         eq.erase(std::remove_if(eq.begin(), eq.end(), isspace), eq.end());
         tokenizeEq(eq, actionQueue);
         std::vector<std::string> action = parseToReversePolish(eq, actionQueue);
-
-        for (auto temp : action) {
-            std::cout << temp << std::endl;
-        }
 
         std::cout << "Enter in your equation: " << std::endl;
     }
