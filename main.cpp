@@ -18,8 +18,8 @@
 // cant be const for reasons
 // still const in spirit lmao
 std::unordered_map<std::string, int> OPERATOR_PRIORITY = {
-    {"(", 0}, {")", 0}, {"+", 2}, {"-", 2},
-    {"*", 3}, {"/", 3}, {"^", 4}, {"%", 4}};
+    {"(", 0}, {")", 0}, {"+", 2}, {"-", 2},   {"*", 3},   {"/", 3},
+    {"^", 5}, {"%", 5}, {"!", 5}, {"cos", 4}, {"tan", 4}, {"sin", 4}};
 
 const std::string ONE_VAL_OPERATORS[] = {"sin", "cos", "tan", "!"};
 constexpr int LEN_ONE_OPERATORS =
@@ -82,8 +82,8 @@ parseToReversePolish(std::string& eq, std::queue<std::string>& actionQueue) {
                 eqOperator.pop();
             }
             eqOperator.pop(); // remove the (
-            std::cout << "STACK SIZE: " << eqOperator.size() << std::endl;
-            std::cout << "STACK EMPTY: " << eqOperator.empty() << std::endl;
+            /*std::cout << "STACK SIZE: " << eqOperator.size() << std::endl;*/
+            /*std::cout << "STACK EMPTY: " << eqOperator.empty() << std::endl;*/
             prevPriority = -1;
             if (eqOperator.empty()) {
                 // if stack empty, do nothing
@@ -124,7 +124,7 @@ parseToReversePolish(std::string& eq, std::queue<std::string>& actionQueue) {
     }
 
     while (!eqOperator.empty()) {
-        std::cout << "straggler: pushing to back" << std::endl;
+        /*std::cout << "straggler: pushing to back" << std::endl;*/
         action.push_back(eqOperator.top());
         eqOperator.pop();
     }
@@ -141,9 +141,22 @@ bool isDouble(std::string& str, double& num) {
     return true;
 }
 
+double factorial(double num) {
+    if (num == 1) {
+        return 1;
+    }
+    return num * factorial(num - 1);
+}
+
 void calcEqOneOp(double& num, std::string& op) {
     if (op == "sin") {
         num = sin(num);
+    } else if (op == "cos") {
+        num = cos(num);
+    } else if (op == "tan") {
+        num = tan(num);
+    } else if (op == "!") {
+        num = factorial(num);
     }
 }
 
@@ -160,6 +173,8 @@ void calcEqTwoOp(double& lNum, double& rNum, std::string& op) {
         lNum /= rNum;
     } else if (op == "^") {
         lNum = pow(lNum, rNum);
+    } else if (op == "%") {
+        lNum = (int)lNum % (int)rNum;
     }
 }
 
@@ -207,7 +222,8 @@ double solveReversePolishEq(std::vector<std::string>& action) {
         }
 
         if (isDouble(action.at(idx + 2), temp)) {
-            std::cout << "<ERROR> TRIPLE #, breaking and retrying" << std::endl;
+            /*std::cout << "<ERROR> TRIPLE #, breaking and retrying" <<
+             * std::endl;*/
             ++idx;
             continue;
         }
@@ -225,6 +241,27 @@ double solveReversePolishEq(std::vector<std::string>& action) {
     return -1;
 }
 
+void formatString(std::string& str) {
+    str.erase(std::remove_if(str.begin(), str.end(), isspace), str.end());
+    for (char& temp : str) {
+        temp = tolower(temp);
+        switch (temp) {
+        case '[':
+            temp = '(';
+            break;
+        case ']':
+            temp = ')';
+            break;
+        case '{':
+            temp = '(';
+            break;
+        case '}':
+            temp = ')';
+            break;
+        }
+    }
+}
+
 int main() {
     std::string eq;
     std::cout << "Enter in your equation: " << std::endl;
@@ -233,9 +270,10 @@ int main() {
         if (eq.empty()) {
             continue;
         }
-
         std::queue<std::string> actionQueue;
-        eq.erase(std::remove_if(eq.begin(), eq.end(), isspace), eq.end());
+
+        formatString(eq);
+
         std::cout << eq << std::endl;
         tokenizeEq(eq, actionQueue);
         std::vector<std::string> action = parseToReversePolish(eq, actionQueue);
