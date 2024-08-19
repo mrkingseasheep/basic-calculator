@@ -128,6 +128,9 @@ void calcEqOneOp(double& num, std::string& op) {
 }
 
 void calcEqTwoOp(double& lNum, double& rNum, std::string& op) {
+    std::cout << "======" << std::endl;
+    std::cout << lNum << op << rNum << std::endl;
+    std::cout << "======" << std::endl;
     if (op == "+") {
         lNum += rNum;
     } else if (op == "-") {
@@ -141,6 +144,13 @@ void calcEqTwoOp(double& lNum, double& rNum, std::string& op) {
     }
 }
 
+void debugActions(std::vector<std::string>* action) {
+    for (auto temp : *action) {
+        std::cout << temp;
+    }
+    std::cout << std::endl;
+}
+
 // recursive
 double solveReversePolishEq(std::vector<std::string>& action) {
     if (action.size() == 1) {
@@ -151,18 +161,23 @@ double solveReversePolishEq(std::vector<std::string>& action) {
     }
 
     int idx = 0;
-    double lNum, rNum, temp;
+    std::cout << "SIZE: " << action.size() - 2 << std::endl;
     while (idx < action.size() - 2) {
+        double lNum, rNum, temp;
+        debugActions(&action + idx);
+        std::cout << idx << std::endl;
+
         // this case should never happen but I'm leaving it
         // here for completeness
-        if (!isDouble(action.at(idx), lNum)) {
-            ++idx;
-            continue;
-        }
+        /*if (!isDouble(action.at(idx), lNum)) {*/
+        /*    ++idx;*/
+        /*    continue;*/
+        /*}*/
 
         if (!isDouble(action.at(idx + 1), rNum)) {
             constexpr int lenOneOperator =
                 sizeof(ONE_VAL_OPERATORS) / sizeof(*ONE_VAL_OPERATORS);
+            std::cout << lenOneOperator << std::endl;
             for (int i = 0; i < lenOneOperator; ++i) {
                 if (action.at(idx + 1) == ONE_VAL_OPERATORS[i]) {
                     calcEqOneOp(lNum, action.at(idx + 1));
@@ -176,18 +191,21 @@ double solveReversePolishEq(std::vector<std::string>& action) {
         }
 
         if (isDouble(action.at(idx + 2), temp)) {
+            std::cout << "TRIPLE #, breaking and retrying" << std::endl;
             ++idx;
             continue;
         }
 
         calcEqTwoOp(lNum, rNum, action.at(idx + 2));
         action.at(idx) = std::to_string(lNum);
+        std::cout << action.at(idx) << std::endl;
         action.erase(action.begin() + ++idx);
         action.erase(action.begin() + ++idx);
         return solveReversePolishEq(action);
     }
 
     std::cerr << "Early loop termination: error" << std::endl;
+    std::cout << idx << std::endl;
     return -1;
 }
 
@@ -205,13 +223,15 @@ int main() {
         tokenizeEq(eq, actionQueue);
         std::vector<std::string> action = parseToReversePolish(eq, actionQueue);
 
+        std::cout << "=======================" << std::endl;
         for (auto temp : action) {
             std::cout << temp;
         }
         std::cout << std::endl;
+        std::cout << "=======================" << std::endl;
 
         double ans = solveReversePolishEq(action);
-        std::cout << ans << std::endl;
+        std::cout << "the answer to the question is: " << ans << std::endl;
 
         std::cout << "Enter in your equation: " << std::endl;
     }
