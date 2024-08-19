@@ -18,9 +18,12 @@
 // cant be const for reasons
 // still const in spirit lmao
 std::unordered_map<std::string, int> OPERATOR_PRIORITY = {
-    {"+", 2}, {"-", 2}, {"*", 3}, {"/", 3}, {"^", 4}, {"%", 4}};
+    {"(", 0}, {")", 0}, {"+", 2}, {"-", 2},
+    {"*", 3}, {"/", 3}, {"^", 4}, {"%", 4}};
 
 const std::string ONE_VAL_OPERATORS[] = {"sin", "cos", "tan", "!"};
+constexpr int LEN_ONE_OPERATORS =
+    sizeof(ONE_VAL_OPERATORS) / sizeof(*ONE_VAL_OPERATORS);
 
 // no more tree solution
 // using shunting yard algo
@@ -66,20 +69,35 @@ parseToReversePolish(std::string& eq, std::queue<std::string>& actionQueue) {
             continue;
         }
 
+        if (curAction == "(") {
+            // add ( to the stack
+            eqOperator.push(curAction);
+            continue;
+        } else if (curAction == ")") {
+            // pair found
+            std::cout << ") detected" << std::endl;
+            while (eqOperator.top() != "(") {
+                // add all actions prior to )
+                action.push_back(eqOperator.top());
+                std::cout << "adding " << eqOperator.top() << std::endl;
+                eqOperator.pop();
+            }
+            std::cout << "all actions prior to ( are added" << std::endl;
+            eqOperator.pop(); // remove the (
+            std::cout << eqOperator.size() << std::endl;
+            std::cout << eqOperator.empty() << std::endl;
+            if (eqOperator.empty()) {
+                break;
+            }
+            std::cout << "adding op before (" << eqOperator.top() << std::endl;
+            action.push_back(eqOperator.top());
+            eqOperator.pop();
+            continue;
+        }
+
         // curAction is a operation
         double priority = OPERATOR_PRIORITY[curAction];
         /*std::cout << priority << std::endl;*/
-
-        // debugging code
-        /*std::stack<std::string> tempOp = eqOperator;*/
-        /*while (!tempOp.empty()) {*/
-        /*    std::cout << tempOp.top();*/
-        /*    tempOp.pop();*/
-        /*}*/
-        /*std::cout << std::endl;*/
-        /*if (eqOperator.empty()) {*/
-        /*    std::cout << "YOU STUPID" << std::endl;*/
-        /*}*/
 
         if (prevPriority == -1) {
             // if first operator, add to stack
@@ -175,14 +193,12 @@ double solveReversePolishEq(std::vector<std::string>& action) {
         }
 
         if (!isDouble(action.at(idx + 1), rNum)) {
-            constexpr int lenOneOperator =
-                sizeof(ONE_VAL_OPERATORS) / sizeof(*ONE_VAL_OPERATORS);
-            std::cout << lenOneOperator << std::endl;
-            for (int i = 0; i < lenOneOperator; ++i) {
+            std::cout << LEN_ONE_OPERATORS << std::endl;
+            for (int i = 0; i < LEN_ONE_OPERATORS; ++i) {
                 if (action.at(idx + 1) == ONE_VAL_OPERATORS[i]) {
                     calcEqOneOp(lNum, action.at(idx + 1));
                     action.at(idx) = std::to_string(lNum);
-                    action.erase(action.begin() + ++idx);
+                    action.erase(action.begin() + idx + 1);
                     return solveReversePolishEq(action);
                 }
             }
@@ -220,6 +236,7 @@ int main() {
 
         std::queue<std::string> actionQueue;
         eq.erase(std::remove_if(eq.begin(), eq.end(), isspace), eq.end());
+        std::cout << eq << std::endl;
         tokenizeEq(eq, actionQueue);
         std::vector<std::string> action = parseToReversePolish(eq, actionQueue);
 
