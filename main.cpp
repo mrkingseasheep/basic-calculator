@@ -59,26 +59,53 @@ parseToReversePolish(std::string& eq, std::queue<std::string>& actionQueue) {
                 break;
             }
             action.push_back(curAction);
-            std::cout << curAction << std::endl;
+            /*std::cout << curAction << std::endl;*/
             continue;
         }
 
         // curAction is a operation
         double priority = OPERATOR_PRIORITY[curAction];
-        std::cout << priority << std::endl;
+        /*std::cout << priority << std::endl;*/
+
+        // debugging code
+        /*std::stack<std::string> tempOp = eqOperator;*/
+        /*while (!tempOp.empty()) {*/
+        /*    std::cout << tempOp.top();*/
+        /*    tempOp.pop();*/
+        /*}*/
+        /*std::cout << std::endl;*/
+        /*if (eqOperator.empty()) {*/
+        /*    std::cout << "YOU STUPID" << std::endl;*/
+        /*}*/
 
         if (prevPriority == -1) {
+            // if first operator, add to stack
             eqOperator.push(curAction);
             prevPriority = priority;
+            continue;
+        } else {
+            // if new, get priority of prev operator
+            prevPriority = OPERATOR_PRIORITY[eqOperator.top()];
         }
 
         if (priority > prevPriority) {
-            action.push_back(curAction);
+            // if new op is more important
+            // add curAction to stack
+            eqOperator.push(curAction);
         } else {
+            // if prev op is more important
+            // put operator in
             action.push_back(eqOperator.top());
+            // remove old op
             eqOperator.pop();
+            // put new action on stack
             eqOperator.push(curAction);
         }
+    }
+
+    while (!eqOperator.empty()) {
+        action.push_back(eqOperator.top());
+        eqOperator.pop();
     }
 
     return action;
@@ -99,6 +126,11 @@ int main() {
         eq.erase(std::remove_if(eq.begin(), eq.end(), isspace), eq.end());
         tokenizeEq(eq, actionQueue);
         std::vector<std::string> action = parseToReversePolish(eq, actionQueue);
+
+        for (auto temp : action) {
+            std::cout << temp;
+        }
+        std::cout << std::endl;
 
         std::cout << "Enter in your equation: " << std::endl;
     }
