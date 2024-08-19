@@ -20,6 +20,8 @@
 std::unordered_map<std::string, int> OPERATOR_PRIORITY = {
     {"+", 2}, {"-", 2}, {"*", 3}, {"/", 3}, {"^", 4}, {"%", 4}};
 
+const std::string ONE_VAL_OPERATORS[] = {"sin", "cos", "tan", "!"};
+
 // no more tree solution
 // using shunting yard algo
 // also reverse polish notation
@@ -111,7 +113,83 @@ parseToReversePolish(std::string& eq, std::queue<std::string>& actionQueue) {
     return action;
 }
 
-double solveReversePolishEq(std::vector<std::string>& action) {}
+bool isDouble(std::string& str, double& num) {
+    try {
+        num = std::stod(str);
+    } catch (...) {
+        return false;
+    }
+    return true;
+}
+
+void calcEqOneOp(double& num, std::string& op) {
+    ;
+    ;
+}
+
+void calcEqTwoOp(double& lNum, double& rNum, std::string& op) {
+    if (op == "+") {
+        lNum += rNum;
+    } else if (op == "-") {
+        lNum -= rNum;
+    } else if (op == "*") {
+        lNum *= rNum;
+    } else if (op == "/") {
+        lNum /= rNum;
+    } else if (op == "^") {
+        lNum = pow(lNum, rNum);
+    }
+}
+
+// recursive
+double solveReversePolishEq(std::vector<std::string>& action) {
+    if (action.size() == 1) {
+        return std::stod(action.at(0));
+    } else if (action.size() == 0) {
+        std::cerr << "No operations in stack" << std::endl;
+        return -1;
+    }
+
+    int idx = 0;
+    double lNum, rNum, temp;
+    while (idx < action.size() - 2) {
+        // this case should never happen but I'm leaving it
+        // here for completeness
+        if (!isDouble(action.at(idx), lNum)) {
+            ++idx;
+            continue;
+        }
+
+        if (!isDouble(action.at(idx + 1), rNum)) {
+            constexpr int lenOneOperator =
+                sizeof(ONE_VAL_OPERATORS) / sizeof(*ONE_VAL_OPERATORS);
+            for (int i = 0; i < lenOneOperator; ++i) {
+                if (action.at(idx + 1) == ONE_VAL_OPERATORS[i]) {
+                    calcEqOneOp(lNum, action.at(idx + 1));
+                    action.at(idx) = std::to_string(lNum);
+                    action.erase(action.begin() + ++idx);
+                    return solveReversePolishEq(action);
+                }
+            }
+            ++idx;
+            continue;
+        }
+
+        if (isDouble(action.at(idx + 2), temp)) {
+            ++idx;
+            continue;
+        }
+
+        calcEqTwoOp(lNum, rNum, action.at(idx + 2));
+        action.at(idx) = std::to_string(lNum);
+        action.erase(action.begin() + ++idx);
+        action.erase(action.begin() + ++idx);
+        return solveReversePolishEq(action);
+    }
+
+    std::cerr << "Early loop termination: error" << std::endl;
+    return -1;
+}
 
 int main() {
     std::string eq;
@@ -131,6 +209,9 @@ int main() {
             std::cout << temp;
         }
         std::cout << std::endl;
+
+        double ans = solveReversePolishEq(action);
+        std::cout << ans << std::endl;
 
         std::cout << "Enter in your equation: " << std::endl;
     }
