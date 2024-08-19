@@ -58,6 +58,7 @@ parseToReversePolish(std::string& eq, std::queue<std::string>& actionQueue) {
             } catch (...) {
                 std::cerr << "Cannot change string to num: " << curAction
                           << std::endl;
+                std::cout << num << std::endl;
                 break;
             }
             action.push_back(curAction);
@@ -123,8 +124,9 @@ bool isDouble(std::string& str, double& num) {
 }
 
 void calcEqOneOp(double& num, std::string& op) {
-    ;
-    ;
+    if (op == "sin") {
+        num = sin(num);
+    }
 }
 
 void calcEqTwoOp(double& lNum, double& rNum, std::string& op) {
@@ -156,15 +158,18 @@ double solveReversePolishEq(std::vector<std::string>& action) {
     if (action.size() == 1) {
         return std::stod(action.at(0));
     } else if (action.size() == 0) {
-        std::cerr << "No operations in stack" << std::endl;
+        std::cerr << "<ERROR> No operations in stack" << std::endl;
         return -1;
     }
 
     int idx = 0;
     while (idx < action.size()) {
-        std::cout << idx << " : " << action.size() - 2 << std::endl;
-        double lNum, rNum, temp;
+        /*std::cout <<
+         * "--------------------------------------------------------"*/
+        /*          << std::endl;*/
+        /*std::cout << idx << " : " << action.size() << std::endl;*/
         /*debugActions(&action + idx);*/
+        double lNum, rNum, temp;
 
         // this case should never happen but I'm leaving it
         // here for completeness
@@ -190,7 +195,7 @@ double solveReversePolishEq(std::vector<std::string>& action) {
         }
 
         if (isDouble(action.at(idx + 2), temp)) {
-            std::cout << "TRIPLE #, breaking and retrying" << std::endl;
+            std::cout << "<ERROR> TRIPLE #, breaking and retrying" << std::endl;
             ++idx;
             continue;
         }
@@ -198,12 +203,12 @@ double solveReversePolishEq(std::vector<std::string>& action) {
         calcEqTwoOp(lNum, rNum, action.at(idx + 2));
         action.at(idx) = std::to_string(lNum);
         std::cout << action.at(idx) << std::endl;
-        action.erase(action.begin() + ++idx);
-        action.erase(action.begin() + ++idx);
+        action.erase(action.begin() + idx + 1);
+        action.erase(action.begin() + idx + 1);
         return solveReversePolishEq(action);
     }
 
-    std::cerr << "Early loop termination: error" << std::endl;
+    std::cerr << "<ERROR> Early loop termination" << std::endl;
     std::cout << idx << std::endl;
     return -1;
 }
@@ -222,12 +227,12 @@ int main() {
         tokenizeEq(eq, actionQueue);
         std::vector<std::string> action = parseToReversePolish(eq, actionQueue);
 
-        std::cout << "=======================" << std::endl;
-        for (auto temp : action) {
-            std::cout << temp;
-        }
-        std::cout << std::endl;
-        std::cout << "=======================" << std::endl;
+        /*std::cout << "=======================" << std::endl;*/
+        /*for (auto temp : action) {*/
+        /*    std::cout << temp;*/
+        /*}*/
+        /*std::cout << std::endl;*/
+        /*std::cout << "=======================" << std::endl;*/
 
         double ans = solveReversePolishEq(action);
         std::cout << "the answer to the question is: " << ans << std::endl;
