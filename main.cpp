@@ -129,7 +129,7 @@ void calcEqOneOp(double& num, std::string& op) {
 
 void calcEqTwoOp(double& lNum, double& rNum, std::string& op) {
     std::cout << "======" << std::endl;
-    std::cout << lNum << op << rNum << std::endl;
+    std::cout << lNum << " " << op << " " << rNum << std::endl;
     std::cout << "======" << std::endl;
     if (op == "+") {
         lNum += rNum;
@@ -161,18 +161,17 @@ double solveReversePolishEq(std::vector<std::string>& action) {
     }
 
     int idx = 0;
-    std::cout << "SIZE: " << action.size() - 2 << std::endl;
-    while (idx < action.size() - 2) {
+    while (idx < action.size()) {
+        std::cout << idx << " : " << action.size() - 2 << std::endl;
         double lNum, rNum, temp;
-        debugActions(&action + idx);
-        std::cout << idx << std::endl;
+        /*debugActions(&action + idx);*/
 
         // this case should never happen but I'm leaving it
         // here for completeness
-        /*if (!isDouble(action.at(idx), lNum)) {*/
-        /*    ++idx;*/
-        /*    continue;*/
-        /*}*/
+        if (!isDouble(action.at(idx), lNum)) {
+            ++idx;
+            continue;
+        }
 
         if (!isDouble(action.at(idx + 1), rNum)) {
             constexpr int lenOneOperator =
