@@ -51,6 +51,7 @@ parseToReversePolish(std::string& eq, std::queue<std::string>& actionQueue) {
     while (!actionQueue.empty()) {
         std::string curAction = actionQueue.front();
         actionQueue.pop();
+        std::cout << curAction << std::endl;
 
         if (curAction.at(0) == '.' || isdigit(curAction.at(0))) {
             // checks if is digit or not
@@ -75,21 +76,20 @@ parseToReversePolish(std::string& eq, std::queue<std::string>& actionQueue) {
             continue;
         } else if (curAction == ")") {
             // pair found
-            std::cout << ") detected" << std::endl;
             while (eqOperator.top() != "(") {
                 // add all actions prior to )
                 action.push_back(eqOperator.top());
-                std::cout << "adding " << eqOperator.top() << std::endl;
                 eqOperator.pop();
             }
-            std::cout << "all actions prior to ( are added" << std::endl;
             eqOperator.pop(); // remove the (
-            std::cout << eqOperator.size() << std::endl;
-            std::cout << eqOperator.empty() << std::endl;
+            std::cout << "STACK SIZE: " << eqOperator.size() << std::endl;
+            std::cout << "STACK EMPTY: " << eqOperator.empty() << std::endl;
+            prevPriority = -1;
             if (eqOperator.empty()) {
-                break;
+                // if stack empty, do nothing
+                continue;
             }
-            std::cout << "adding op before (" << eqOperator.top() << std::endl;
+            // if stack has stuff, add next op
             action.push_back(eqOperator.top());
             eqOperator.pop();
             continue;
@@ -97,10 +97,9 @@ parseToReversePolish(std::string& eq, std::queue<std::string>& actionQueue) {
 
         // curAction is a operation
         double priority = OPERATOR_PRIORITY[curAction];
-        /*std::cout << priority << std::endl;*/
-
         if (prevPriority == -1) {
             // if first operator, add to stack
+            std::cout << "FIRST TIME OP or after ()" << std::endl;
             eqOperator.push(curAction);
             prevPriority = priority;
             continue;
@@ -125,6 +124,7 @@ parseToReversePolish(std::string& eq, std::queue<std::string>& actionQueue) {
     }
 
     while (!eqOperator.empty()) {
+        std::cout << "straggler: pushing to back" << std::endl;
         action.push_back(eqOperator.top());
         eqOperator.pop();
     }
