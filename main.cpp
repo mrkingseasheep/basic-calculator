@@ -10,8 +10,9 @@
 #include <vector>
 
 std::unordered_map<std::string, int> OPERATOR_PRIORITY = {
-    {"(", 0}, {")", 0}, {"+", 2}, {"-", 2},   {"*", 3},   {"/", 3},
-    {"^", 5}, {"%", 5}, {"!", 5}, {"cos", 4}, {"tan", 4}, {"sin", 4}};
+    {"(", 0},   {")", 0},   {"+", 2},   {"-", 2},  {"*", 3},
+    {"/", 3},   {"^", 5},   {"%", 5},   {"!", 5},  {"cos", 4},
+    {"tan", 4}, {"sin", 4}, {"max", 4}, {"min", 4}};
 
 // what are the odds that something actually gets this
 const double ERR_VAL = -0.0069;
@@ -36,6 +37,10 @@ parseToReversePolish(std::string& eq, std::queue<std::string>& actionQueue) {
     while (!actionQueue.empty()) {
         std::string curAction = actionQueue.front();
         actionQueue.pop();
+
+        if (curAction.at(0) == ',') {
+            continue;
+        }
 
         if (curAction.at(0) == '.' || isdigit(curAction.at(0))) {
             // checks if is digit or not
@@ -141,7 +146,7 @@ double getDouble(const std::string& str) {
 }
 
 bool calcEqOneOp(std::string& lNum, std::string& op) {
-    std::cout << lNum << " " << op << std::endl;
+    /*std::cout << lNum << " " << op << std::endl;*/
     if (isDouble(op)) {
         return false;
     }
@@ -169,7 +174,7 @@ bool calcEqTwoOp(std::string& lNumStr, std::string& rNumStr, std::string& op) {
     }
     double lNum = getDouble(lNumStr);
     double rNum = getDouble(rNumStr);
-    std::cout << "> " << lNum << " " << op << " " << rNum << std::endl;
+    /*std::cout << "> " << lNum << " " << op << " " << rNum << std::endl;*/
     if (op == "+") {
         lNum += rNum;
     } else if (op == "-") {
@@ -182,6 +187,10 @@ bool calcEqTwoOp(std::string& lNumStr, std::string& rNumStr, std::string& op) {
         lNum = pow(lNum, rNum);
     } else if (op == "%") {
         lNum = (int)lNum % (int)rNum;
+    } else if (op == "min") {
+        lNum = std::min(lNum, rNum);
+    } else if (op == "max") {
+        lNum = std::max(lNum, rNum);
     } else {
         /*std::cout << "<ERROR> symbol not found, 2 opts" << std::endl;*/
         return false;
@@ -209,7 +218,7 @@ double solveReversePolishEq(std::vector<std::string>& action) {
 
     int idx = 0;
     while (idx < action.size()) {
-        debugActions(&action);
+        /*debugActions(&action);*/
 
         std::string& lNumStr = action.at(idx);
         std::string& rNumStr = action.at(idx + 1);
@@ -222,14 +231,14 @@ double solveReversePolishEq(std::vector<std::string>& action) {
             continue;
         }
 
-        std::cout << "1 INPUT" << std::endl;
+        /*std::cout << "1 INPUT" << std::endl;*/
         if (calcEqOneOp(lNumStr, rNumStr)) {
             /*std::cout << "------ one input func" << std::endl;*/
             action.erase(action.begin() + idx + 1);
             return solveReversePolishEq(action);
         }
 
-        std::cout << "2 INPUT" << std::endl;
+        /*std::cout << "2 INPUT" << std::endl;*/
         if (calcEqTwoOp(lNumStr, rNumStr, op)) {
             /*std::cout << "------ two input func" << std::endl;*/
             action.erase(action.begin() + idx + 2); // erase from back to front
@@ -266,29 +275,48 @@ void formatString(std::string& str) {
     }
 }
 
-int main() {
+double solveEq() {
     std::string eq;
-    std::cout << "Enter in your equation: " << std::endl;
-
     while (std::getline(std::cin, eq)) {
         if (eq.empty()) {
             continue;
         }
         std::queue<std::string> actionQueue;
 
-        formatString(eq);
+        try {
+            formatString(eq);
 
-        /*std::cout << eq << std::endl;*/
+            /*std::cout << eq << std::endl;*/
+            tokenizeEq(eq, actionQueue);
+            std::vector<std::string> action =
+                parseToReversePolish(eq, actionQueue);
+
+            double ans = solveReversePolishEq(action);
+            /*std::cout << "<ANS> " << ans << std::endl;*/
+            std::cout << ans << std::endl;
+            return ans;
+        } catch (...) {
+        }
+    }
+    return -1;
+}
+
+int main() {
+    std::string eq;
+
+    try {
+        std::string eq;
+        while (!std::getline(std::cin, eq) || eq.empty()) {
+        }
+
+        std::queue<std::string> actionQueue;
+        formatString(eq);
         tokenizeEq(eq, actionQueue);
         std::vector<std::string> action = parseToReversePolish(eq, actionQueue);
-
         double ans = solveReversePolishEq(action);
-        std::cout << "<ANS> " << ans << std::endl;
-
-        std::cout
-            << "------------------------------------------------------------"
-            << std::endl;
-        std::cout << "Enter in your equation: " << std::endl;
+        std::cout << ans << std::endl;
+    } catch (...) {
+        return -1;
     }
 
     return 0;
