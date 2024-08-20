@@ -51,7 +51,7 @@ parseToReversePolish(std::string& eq, std::queue<std::string>& actionQueue) {
     while (!actionQueue.empty()) {
         std::string curAction = actionQueue.front();
         actionQueue.pop();
-        std::cout << curAction << std::endl;
+        /*std::cout << curAction << std::endl;*/
 
         if (curAction.at(0) == '.' || isdigit(curAction.at(0))) {
             // checks if is digit or not
@@ -99,7 +99,7 @@ parseToReversePolish(std::string& eq, std::queue<std::string>& actionQueue) {
         double priority = OPERATOR_PRIORITY[curAction];
         if (prevPriority == -1) {
             // if first operator, add to stack
-            std::cout << "FIRST TIME OP or after ()" << std::endl;
+            /*std::cout << "FIRST TIME OP or after ()" << std::endl;*/
             eqOperator.push(curAction);
             prevPriority = priority;
             continue;
@@ -132,23 +132,36 @@ parseToReversePolish(std::string& eq, std::queue<std::string>& actionQueue) {
     return action;
 }
 
-bool isDouble(std::string& str, double& num) {
-    try {
-        num = std::stod(str);
-    } catch (...) {
-        return false;
-    }
-    return true;
-}
-
-double factorial(double num) {
+double factorial(const double num) {
     if (num == 1) {
         return 1;
     }
     return num * factorial(num - 1);
 }
 
-void calcEqOneOp(double& num, std::string& op) {
+bool isDouble(const std::string& str) {
+    try {
+        std::stod(str);
+    } catch (...) {
+        return false;
+    }
+    return true;
+}
+
+double getDouble(const std::string& str) {
+    try {
+        return std::stod(str);
+    } catch (...) {
+        std::cerr << "<ERROR> cannot convert to double" << std::endl;
+        return -0.069;
+    }
+}
+
+bool calcEqOneOp(std::string& lNum, std::string& op) {
+    if (isDouble(op)) {
+        return false;
+    }
+    double num = getDouble(lNum);
     if (op == "sin") {
         num = sin(num);
     } else if (op == "cos") {
@@ -157,12 +170,23 @@ void calcEqOneOp(double& num, std::string& op) {
         num = tan(num);
     } else if (op == "!") {
         num = factorial(num);
+    } else {
+        /*std::cout << "<ERROR> symbol not found" << std::endl;*/
+        return false;
     }
+    lNum = std::to_string(num);
+    return true;
 }
 
-void calcEqTwoOp(double& lNum, double& rNum, std::string& op) {
-    std::cout << "======" << std::endl;
-    std::cout << lNum << " " << op << " " << rNum << std::endl;
+bool calcEqTwoOp(std::string& lNumStr, std::string& rNumStr, std::string& op) {
+    double num;
+    if (isDouble(op)) {
+        return false;
+    }
+    double lNum = getDouble(lNumStr);
+    double rNum = getDouble(rNumStr);
+    /*std::cout << "======" << std::endl;*/
+    /*std::cout << lNum << " " << op << " " << rNum << std::endl;*/
     if (op == "+") {
         lNum += rNum;
     } else if (op == "-") {
@@ -175,7 +199,12 @@ void calcEqTwoOp(double& lNum, double& rNum, std::string& op) {
         lNum = pow(lNum, rNum);
     } else if (op == "%") {
         lNum = (int)lNum % (int)rNum;
+    } else {
+        /*std::cout << "<ERROR> symbol not found" << std::endl;*/
+        return false;
     }
+    lNumStr = std::to_string(lNum);
+    return true;
 }
 
 void debugActions(std::vector<std::string>* action) {
@@ -186,57 +215,42 @@ void debugActions(std::vector<std::string>* action) {
     std::cout << std::endl;
 }
 
-// recursive
 double solveReversePolishEq(std::vector<std::string>& action) {
     if (action.size() == 1) {
         return std::stod(action.at(0));
     } else if (action.size() == 0) {
-        std::cerr << "<ERROR> No operations in stack" << std::endl;
+        std::cerr << "<ERROR> no operations in stack" << std::endl;
         return -1;
     }
 
     int idx = 0;
     while (idx < action.size()) {
         debugActions(&action);
-        double lNum, rNum, temp;
 
-        // this case should never happen but I'm leaving it
-        // here for completeness
-        if (!isDouble(action.at(idx), lNum)) {
+        std::string& lNumStr = action.at(idx);
+        std::string& rNumStr = action.at(idx + 1);
+        std::string& op = action.at(idx + 2);
+
+        if (!isDouble(lNumStr)) {
             ++idx;
             continue;
         }
 
-        if (!isDouble(action.at(idx + 1), rNum)) {
-            std::cout << LEN_ONE_OPERATORS << std::endl;
-            for (int i = 0; i < LEN_ONE_OPERATORS; ++i) {
-                if (action.at(idx + 1) == ONE_VAL_OPERATORS[i]) {
-                    calcEqOneOp(lNum, action.at(idx + 1));
-                    action.at(idx) = std::to_string(lNum);
-                    action.erase(action.begin() + idx + 1);
-                    return solveReversePolishEq(action);
-                }
-            }
-            ++idx;
-            continue;
+        if (calcEqOneOp(lNumStr, op)) {
+            action.erase(action.begin() + idx + 1);
+            return solveReversePolishEq(action);
         }
 
-        if (isDouble(action.at(idx + 2), temp)) {
-            /*std::cout << "<ERROR> TRIPLE #, breaking and retrying" <<
-             * std::endl;*/
-            ++idx;
-            continue;
+        if (calcEqTwoOp(lNumStr, rNumStr, op)) {
+            action.erase(action.begin() + idx + 2); // erase from back to front
+            action.erase(action.begin() + idx + 1);
+            return solveReversePolishEq(action);
         }
 
-        calcEqTwoOp(lNum, rNum, action.at(idx + 2));
-        action.at(idx) = std::to_string(lNum);
-        std::cout << action.at(idx) << std::endl;
-        action.erase(action.begin() + idx + 1);
-        action.erase(action.begin() + idx + 1);
-        return solveReversePolishEq(action);
+        ++idx;
     }
 
-    std::cerr << "<ERROR> Early loop termination" << std::endl;
+    std::cerr << "<ERROR> loop completed without solution" << std::endl;
     std::cout << idx << std::endl;
     return -1;
 }
@@ -274,7 +288,7 @@ int main() {
 
         formatString(eq);
 
-        std::cout << eq << std::endl;
+        /*std::cout << eq << std::endl;*/
         tokenizeEq(eq, actionQueue);
         std::vector<std::string> action = parseToReversePolish(eq, actionQueue);
 
