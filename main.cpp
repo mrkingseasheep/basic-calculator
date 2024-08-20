@@ -2,6 +2,7 @@
 #include <cctype>
 #include <cmath>
 #include <iostream>
+#include <numeric>
 #include <queue>
 #include <regex>
 #include <stack>
@@ -10,9 +11,9 @@
 #include <vector>
 
 std::unordered_map<std::string, int> OPERATOR_PRIORITY = {
-    {"(", 0},   {")", 0},   {"+", 2},   {"-", 2},  {"*", 3},
-    {"/", 3},   {"^", 5},   {"%", 5},   {"!", 5},  {"cos", 4},
-    {"tan", 4}, {"sin", 4}, {"max", 4}, {"min", 4}};
+    {"(", 0},   {")", 0},   {"+", 2},   {"-", 2},   {"*", 3},   {"/", 3},
+    {"^", 5},   {"%", 5},   {"!", 5},   {"cos", 4}, {"tan", 4}, {"sin", 4},
+    {"max", 4}, {"min", 4}, {"lcm", 4}, {"gcd", 4}};
 
 // what are the odds that something actually gets this
 const double ERR_VAL = -0.0069;
@@ -121,7 +122,7 @@ parseToReversePolish(std::string& eq, std::queue<std::string>& actionQueue) {
 }
 
 double factorial(const double num) {
-    if (num == 1) {
+    if (num <= 1) {
         return 1;
     }
     return num * factorial(num - 1);
@@ -158,7 +159,7 @@ bool calcEqOneOp(std::string& lNum, std::string& op) {
     } else if (op == "tan") {
         num = tan(num);
     } else if (op == "!") {
-        num = factorial(num);
+        num = factorial((int)num);
     } else {
         /*std::cout << "<ERROR> symbol not found, 1 opt" << std::endl;*/
         return false;
@@ -191,6 +192,10 @@ bool calcEqTwoOp(std::string& lNumStr, std::string& rNumStr, std::string& op) {
         lNum = std::min(lNum, rNum);
     } else if (op == "max") {
         lNum = std::max(lNum, rNum);
+    } else if (op == "lcm") {
+        lNum = std::lcm((int)lNum, (int)rNum);
+    } else if (op == "gcf") {
+        lNum = std::gcd((int)lNum, (int)rNum);
     } else {
         /*std::cout << "<ERROR> symbol not found, 2 opts" << std::endl;*/
         return false;

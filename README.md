@@ -32,15 +32,23 @@ Profit.
 
 ## List of supported operations
 
+Remember to properly use (brackets) 👍
+
 - [x] +-/\*
 - [x] ^%!
 - [x] sin cos tan
 - [x] min max
+- [x] lcm and gcd
+
+For min, max, lcm and gcd, follow the following notation:
+
+`lcm(2, 4)`
+
+%, !, lcm and gcd will truncate (NOT ROUND) any floating point number.
 
 ## List of yet to be supported operations
 
-- [ ] arctan and the other funny trigonometry operations
+- [ ] arctan and the other funny trigonometry operations (just a change to the regex)
 - [ ] currency conversion
-- [ ] lcm and gcf
 - [ ] support for constants
 - [ ] unit conversion
