@@ -9,29 +9,14 @@
 #include <unordered_map>
 #include <vector>
 
-// Which operators have the greatest priority
-// ()
-// ^
-// */
-// +-
-// > < >= <= =
-// cant be const for reasons
-// still const in spirit lmao
 std::unordered_map<std::string, int> OPERATOR_PRIORITY = {
     {"(", 0}, {")", 0}, {"+", 2}, {"-", 2},   {"*", 3},   {"/", 3},
     {"^", 5}, {"%", 5}, {"!", 5}, {"cos", 4}, {"tan", 4}, {"sin", 4}};
 
-const std::string ONE_VAL_OPERATORS[] = {"sin", "cos", "tan", "!"};
-constexpr int LEN_ONE_OPERATORS =
-    sizeof(ONE_VAL_OPERATORS) / sizeof(*ONE_VAL_OPERATORS);
+// what are the odds that something actually gets this
+const double ERR_VAL = -0.0069;
 
-// no more tree solution
-// using shunting yard algo
-// also reverse polish notation
-// https://stackoverflow.com/questions/11627440/regex-c-extract-substring
 void tokenizeEq(std::string& eq, std::queue<std::string>& actionQueue) {
-    // TODO all chars must be lowercase
-    // https://stackoverflow.com/questions/21667295/how-to-match-multiple-results-using-stdregex
     const std::regex findVal("\\d*\\.?\\d+|[^\\d\\.a-z]|[a-z]{3}");
     std::regex_token_iterator<std::string::iterator> rend;
     std::regex_token_iterator<std::string::iterator> value(eq.begin(), eq.end(),
@@ -51,7 +36,6 @@ parseToReversePolish(std::string& eq, std::queue<std::string>& actionQueue) {
     while (!actionQueue.empty()) {
         std::string curAction = actionQueue.front();
         actionQueue.pop();
-        /*std::cout << curAction << std::endl;*/
 
         if (curAction.at(0) == '.' || isdigit(curAction.at(0))) {
             // checks if is digit or not
@@ -66,7 +50,6 @@ parseToReversePolish(std::string& eq, std::queue<std::string>& actionQueue) {
                 break;
             }
             action.push_back(curAction);
-            /*std::cout << curAction << std::endl;*/
             continue;
         }
 
@@ -158,6 +141,7 @@ double getDouble(const std::string& str) {
 }
 
 bool calcEqOneOp(std::string& lNum, std::string& op) {
+    std::cout << lNum << " " << op << std::endl;
     if (isDouble(op)) {
         return false;
     }
@@ -171,7 +155,7 @@ bool calcEqOneOp(std::string& lNum, std::string& op) {
     } else if (op == "!") {
         num = factorial(num);
     } else {
-        /*std::cout << "<ERROR> symbol not found" << std::endl;*/
+        /*std::cout << "<ERROR> symbol not found, 1 opt" << std::endl;*/
         return false;
     }
     lNum = std::to_string(num);
@@ -185,8 +169,7 @@ bool calcEqTwoOp(std::string& lNumStr, std::string& rNumStr, std::string& op) {
     }
     double lNum = getDouble(lNumStr);
     double rNum = getDouble(rNumStr);
-    /*std::cout << "======" << std::endl;*/
-    /*std::cout << lNum << " " << op << " " << rNum << std::endl;*/
+    std::cout << "> " << lNum << " " << op << " " << rNum << std::endl;
     if (op == "+") {
         lNum += rNum;
     } else if (op == "-") {
@@ -200,7 +183,7 @@ bool calcEqTwoOp(std::string& lNumStr, std::string& rNumStr, std::string& op) {
     } else if (op == "%") {
         lNum = (int)lNum % (int)rNum;
     } else {
-        /*std::cout << "<ERROR> symbol not found" << std::endl;*/
+        /*std::cout << "<ERROR> symbol not found, 2 opts" << std::endl;*/
         return false;
     }
     lNumStr = std::to_string(lNum);
@@ -216,9 +199,10 @@ void debugActions(std::vector<std::string>* action) {
 }
 
 double solveReversePolishEq(std::vector<std::string>& action) {
-    if (action.size() == 1) {
+    int numActions = action.size();
+    if (numActions == 1) {
         return std::stod(action.at(0));
-    } else if (action.size() == 0) {
+    } else if (numActions == 0) {
         std::cerr << "<ERROR> no operations in stack" << std::endl;
         return -1;
     }
@@ -229,19 +213,25 @@ double solveReversePolishEq(std::vector<std::string>& action) {
 
         std::string& lNumStr = action.at(idx);
         std::string& rNumStr = action.at(idx + 1);
-        std::string& op = action.at(idx + 2);
+
+        std::string& op = (idx + 2 < numActions) ? action.at(idx + 2) : lNumStr;
 
         if (!isDouble(lNumStr)) {
+            /*std::cout << "------ first num is symbol" << std::endl;*/
             ++idx;
             continue;
         }
 
-        if (calcEqOneOp(lNumStr, op)) {
+        std::cout << "1 INPUT" << std::endl;
+        if (calcEqOneOp(lNumStr, rNumStr)) {
+            /*std::cout << "------ one input func" << std::endl;*/
             action.erase(action.begin() + idx + 1);
             return solveReversePolishEq(action);
         }
 
+        std::cout << "2 INPUT" << std::endl;
         if (calcEqTwoOp(lNumStr, rNumStr, op)) {
+            /*std::cout << "------ two input func" << std::endl;*/
             action.erase(action.begin() + idx + 2); // erase from back to front
             action.erase(action.begin() + idx + 1);
             return solveReversePolishEq(action);
